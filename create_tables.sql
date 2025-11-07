@@ -1,6 +1,7 @@
 create Table Meeting_Time(
     meeting_id INT,
     section_id INT,
+    day_of_week ENUM('M', 'T', 'W', 'TR', 'F') NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     meeting_location VARCHAR(20),
