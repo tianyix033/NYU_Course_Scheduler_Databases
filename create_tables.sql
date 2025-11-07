@@ -43,7 +43,7 @@ CREATE TABLE Review (
     rating INT NOT NULL CHECK (rating >= 0 AND rating <= 5)
     comment TEXT,
     created_at TIMESTAMP NOT NULL,
-    FOREIGN KEY(user_id) REFERENCES User(user_id),
+    FOREIGN KEY(user_id) REFERENCES User(user_id)
 );
 
 CREATE TABLE User_Selection (
@@ -59,5 +59,5 @@ CREATE TABLE User_Selection (
 CREATE TABLE Instructor (
     instructor_id INT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL
 );
