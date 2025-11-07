@@ -29,7 +29,7 @@ create Table Section(
     FOREIGN KEY (instructor_id) REFERENCES Instructor(instructor_id)
 );
 
-CREATE TABLE User (
+CREATE TABLE Users (
     user_id INT AUTO_INCREMENT NOT NULL, 
     username VARCHAR(20) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
