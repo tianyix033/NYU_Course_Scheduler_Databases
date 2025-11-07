@@ -1,14 +1,3 @@
-create Table Meeting_Time(
-    meeting_id INT,
-    section_id INT,
-    day_of_week ENUM('M', 'T', 'W', 'TR', 'F') NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
-    meeting_location VARCHAR(20),
-    Primary Key (meeting_id),
-    FOREIGN KEY (section_id) REFERENCES Section(section_id)
-);
-
 create Table Course(
     course_id VARCHAR(20),
     title VARCHAR(30) NOT NULL,
@@ -18,14 +7,20 @@ create Table Course(
     Primary Key (course_id)
 );
 
+CREATE TABLE Instructor (
+    instructor_id INT PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL
+);
+
 create Table Section(
     section_id INT,
     course_id VARCHAR NOT NULL,
     instructor_id INT NOT NULL,
     section_type ENUM('Lecture', 'Lab') NOT NULL,
     campus VARCHAR NOT NULL,
-    Primary Key (section),
-    FOREIGN KEY (course_id) REFERENCES Meeting_Time(meeting_id),
+    Primary Key (section_id),
+    FOREIGN KEY (course_id) REFERENCES Course(course_id),
     FOREIGN KEY (instructor_id) REFERENCES Instructor(instructor_id)
 );
 
@@ -37,18 +32,19 @@ CREATE TABLE Users (
 );
 
 CREATE TABLE Review (
-    user_id INT PRIMARY KEY,
-    course_id VARCHAR PRIMARY KEY,
-    instructor_id INT PRIMARY KEY,
+    user_id INT,
+    course_id VARCHAR(20),
+    instructor_id INT,
     rating INT NOT NULL CHECK (rating >= 0 AND rating <= 5)
     comment TEXT,
     created_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (user_id, course_id, instructor_id),
     FOREIGN KEY(user_id) REFERENCES User(user_id)
 );
 
 CREATE TABLE User_Selection (
     user_id INT, 
-    course_id VARCHAR, 
+    course_id VARCHAR(20), 
     instructor_id INT,
     FOREIGN KEY(user_id) REFERENCES User(user_id),
     FOREIGN KEY(course_id) REFERENCES Course(course_id),
@@ -56,8 +52,13 @@ CREATE TABLE User_Selection (
     PRIMARY KEY (user_id, course_id, instructor_id)
 );
 
-CREATE TABLE Instructor (
-    instructor_id INT PRIMARY KEY,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL
+create Table Meeting_Time(
+    meeting_id INT,
+    section_id INT,
+    day_of_week ENUM('M', 'T', 'W', 'TR', 'F') NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    meeting_location VARCHAR(20),
+    Primary Key (meeting_id),
+    FOREIGN KEY (section_id) REFERENCES Section(section_id)
 );
