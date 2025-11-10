@@ -1,5 +1,6 @@
+-- obsolete; see COMMANDS.sql
 create Table Course(
-    course_id VARCHAR(20),
+    course_id VARCHAR(30),
     title VARCHAR(30) NOT NULL,
     credits INT(1) NOT NULL,
     course_description TEXT,
@@ -15,10 +16,10 @@ CREATE TABLE Instructor (
 
 create Table Section(
     section_id INT,
-    course_id VARCHAR NOT NULL,
+    course_id VARCHAR(30) NOT NULL,
     instructor_id INT NOT NULL,
     section_type ENUM('Lecture', 'Lab') NOT NULL,
-    campus VARCHAR NOT NULL,
+    campus ENUM('Washington Square', 'Brooklyn Campus') NOT NULL,
     Primary Key (section_id),
     FOREIGN KEY (course_id) REFERENCES Course(course_id),
     FOREIGN KEY (instructor_id) REFERENCES Instructor(instructor_id)
@@ -33,7 +34,7 @@ CREATE TABLE Users (
 
 CREATE TABLE Review (
     user_id INT,
-    course_id VARCHAR(20),
+    course_id VARCHAR(30),
     instructor_id INT,
     rating INT NOT NULL CHECK (rating >= 0 AND rating <= 5)
     comment TEXT,
@@ -44,7 +45,7 @@ CREATE TABLE Review (
 
 CREATE TABLE User_Selection (
     user_id INT, 
-    course_id VARCHAR(20), 
+    course_id VARCHAR(30), 
     instructor_id INT,
     FOREIGN KEY(user_id) REFERENCES User(user_id),
     FOREIGN KEY(course_id) REFERENCES Course(course_id),
@@ -62,3 +63,4 @@ create Table Meeting_Time(
     Primary Key (meeting_id),
     FOREIGN KEY (section_id) REFERENCES Section(section_id)
 );
+
