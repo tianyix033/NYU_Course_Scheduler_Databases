@@ -1,14 +1,12 @@
 # NYU Course Planner
 
-**Team Members:** Youwen Chen, Sally Qiao, Tianyi Xu, Ruimeng Yang
+**Team Members:** Youwen Chen, Sally Qiao, Tianyi Xu, Ruimeng Yang; Name ordered alphabetically
 
 ---
 
 ## Project Overview
 
-The **NYU Course Scheduler** is a student-centric web application designed to complement the official university registration system. While the university website serves as the definitive platform for enrollment, our project provides powerful planning tools that cater directly to student needs. 
-
-Key features that extend beyond official registration—such as the ability to build and compare multiple potential schedules and a platform for user-generated course reviews—offer a more personalized and insightful planning experience. Our goal is to empower students with a dedicated space to strategize their academic journey before finalizing their choices on the official portal.
+A student-centric planner that complements official registration. Students select course–instructor pairs; the app auto‑generates a conflict‑free weekly schedule and supports course/instructor reviews.
 
 ---
 
@@ -26,104 +24,15 @@ Key features that extend beyond official registration—such as the ability to b
 
 ## Database Schema
 
-### Key Entities
-
-#### 1. **Course**
-Stores static information for all courses.
-
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `course_id` | VARCHAR(30) | PRIMARY KEY |
-| `title` | VARCHAR(100) | NOT NULL |
-| `credits` | INT(1) | NOT NULL |
-| `course_description` | TEXT | |
-| `prerequisites` | TEXT | |
-
----
-
-#### 2. **Instructor**
-Stores information about instructors.
-
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `instructor_id` | INT | PRIMARY KEY |
-| `first_name` | VARCHAR(100) | NOT NULL |
-| `last_name` | VARCHAR(100) | NOT NULL |
-
----
-
-#### 3. **Section**
-Stores information about specific class sections offered each semester. This is the central relation connecting courses, instructors, and meeting times.
-
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `section_id` | INT | PRIMARY KEY |
-| `course_id` | VARCHAR(30) | FOREIGN KEY → Course(course_id) |
-| `instructor_id` | INT | FOREIGN KEY → Instructor(instructor_id) |
-| `section_type` | ENUM('Lecture', 'Lab') | NOT NULL |
-| `campus` | ENUM('Washington Square', 'Brooklyn Campus') | NOT NULL |
-
----
-
-#### 4. **Meeting_Time**
-Stores the specific meeting times and locations for each section. A section can have multiple meeting times.
-
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `meeting_id` | INT | PRIMARY KEY |
-| `section_id` | INT | FOREIGN KEY → Section(section_id) |
-| `day_of_week` | ENUM('M', 'T', 'W', 'TR', 'F', 'TBA') | NOT NULL |
-| `start_time` | TIME | |
-| `end_time` | TIME | |
-| `meeting_location` | VARCHAR(40) | |
-
----
-
-#### 5. **Users**
-Stores information for the website's users, enabling personalized schedule functionality.
-
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `user_id` | INT | PRIMARY KEY, AUTO_INCREMENT |
-| `username` | VARCHAR(20) | NOT NULL |
-| `password_hash` | VARCHAR(255) | NOT NULL |
-
----
-
-#### 6. **User_Selection**
-Stores the courses and instructors that users have selected for their schedules. A user can select multiple courses.
-
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `user_id` | INT | PRIMARY KEY, FOREIGN KEY → Users(user_id) |
-| `course_id` | VARCHAR(30) | PRIMARY KEY, FOREIGN KEY → Course(course_id) |
-| `instructor_id` | INT | PRIMARY KEY, FOREIGN KEY → Instructor(instructor_id) |
-
----
-
-#### 7. **Review**
-Stores user-generated reviews for a course taught by a specific instructor.
-
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `user_id` | INT | PRIMARY KEY, FOREIGN KEY → Users(user_id) |
-| `course_id` | VARCHAR(30) | PRIMARY KEY, FOREIGN KEY → Course(course_id) |
-| `instructor_id` | INT | PRIMARY KEY, FOREIGN KEY → Instructor(instructor_id) |
-| `rating` | INT | CHECK: 0-5 |
-| `comment` | TEXT | |
-| `created_at` | TIMESTAMP | |
-
----
-
-#### 8. **Course_Instructor**
-Stores aggregated review statistics for each course-instructor combination.
-
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `course_id` | VARCHAR(30) | PRIMARY KEY, FOREIGN KEY → Course(course_id) |
-| `instructor_id` | INT | PRIMARY KEY, FOREIGN KEY → Instructor(instructor_id) |
-| `review_sum` | INT | Sum of all ratings |
-| `review_count` | INT | Number of reviews |
+Key tables (condensed):
+- `Course(course_id PK, title, credits, course_description, prerequisites)`
+- `Instructor(instructor_id PK, first_name, last_name)`
+- `Section(section_id PK, course_id FK, instructor_id FK, section_type, campus)`
+- `Meeting_Time(meeting_id PK, section_id FK, day_of_week, start_time, end_time, meeting_location)`
+- `Users(user_id PK, username, password_hash)`
+- `User_Selection(user_id PK, course_id PK, instructor_id PK)` — selections drive the auto-schedule
+- `Review(user_id PK, course_id PK, instructor_id PK, rating, comment, created_at)`
+- `Course_Instructor(course_id PK, instructor_id PK, review_sum, review_count)` — aggregated ratings
 
 ---
 
@@ -144,8 +53,6 @@ This section describes how the entities in the database interact with each other
 ---
 
 ## Business Rules
-
-These are the specific constraints and rules that govern the data and user interactions within the application.
 
 ### User & Authentication
 
@@ -215,13 +122,11 @@ The database includes the following PostgreSQL stored procedures or functions (c
 |---------|----------|
 | `review_insert_upsert_trigger` | Automatically updates Course_Instructor statistics when a new review is inserted |
 
-> **Note:** PostgreSQL trigger syntax is slightly different from MySQL. Triggers execute functions, not procedure-like code blocks directly.
+> PostgreSQL triggers execute functions; details in `IMPLEMENTATION.md`.
 
 ---
 
 ## Assumptions and Justifications
-
-This section explains the key decisions made during the database design process and the reasoning behind them.
 
 ### Prerequisite as Plain Text
 
@@ -271,9 +176,6 @@ This section explains the key decisions made during the database design process 
 
 ---
 
-## Getting Started
-
-For detailed technical implementation guidelines, step-by-step instructions, and team action plans, please see **[IMPLEMENTATION.md](IMPLEMENTATION.md)**.
 
 ---
 

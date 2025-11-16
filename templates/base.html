@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYU Course Planner</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        .flash {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            margin: 1rem 0;
+        }
+        .flash.error {
+            background-color: #fee2e2; /* red-100 */
+            border-color: #ef4444;     /* red-500 */
+            color: #7f1d1d;            /* red-900 */
+        }
+        .flash.success {
+            background-color: #dcfce7; /* green-100 */
+            border-color: #22c55e;     /* green-500 */
+            color: #065f46;            /* green-900 */
+        }
+        .flash.info {
+            background-color: #e0f2fe; /* sky-100 */
+            border-color: #0ea5e9;     /* sky-500 */
+            color: #0c4a6e;            /* sky-900 */
+        }
+    </style>
+</head>
+<body>
+    <nav class="container">
+        <ul>
+            <li><strong>NYU Course Planner</strong></li>
+        </ul>
+        <ul>
+            {% if session.username %}
+                <li>Hello, {{ session.username }}</li>
+                <li>
+                    <form method="post" action="{{ url_for('auth.logout') }}">
+                        <button type="submit" class="secondary">Logout</button>
+                    </form>
+                </li>
+            {% else %}
+                <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a href="{{ url_for('auth.register') }}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+              {% for category, message in messages %}
+                {% set cls = 'flash ' + (category if category else 'info') %}
+                <div class="{{ cls }}" role="alert">{{ message }}</div>
+              {% endfor %}
+          {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
+
+

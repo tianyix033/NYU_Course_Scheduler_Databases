@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<article>
+  <h2>Register</h2>
+  <form method="post" action="{{ url_for('auth.register') }}">
+    <label>
+      Username
+      <input type="text" name="username" value="{{ username or '' }}" minlength="3" maxlength="20" required />
+    </label>
+    <label>
+      Password
+      <input type="password" name="password" minlength="6" required />
+    </label>
+    <label>
+      Confirm Password
+      <input type="password" name="confirm_password" minlength="6" required />
+    </label>
+    <button type="submit">Create Account</button>
+  </form>
+  <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login here</a>.</p>
+  <p>Password policy: at least 6 characters.</p>
+</article>
+{% endblock %}
+
+
