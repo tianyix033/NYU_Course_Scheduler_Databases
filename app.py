@@ -8,11 +8,13 @@ def create_app() -> Flask:
     app.config.from_object(Config)
 
     # Register blueprints
+
+    from routes.home import home_bp
+    app.register_blueprint(home_bp)
+    
     from routes.auth import auth_bp
     app.register_blueprint(auth_bp)
     
-    from routes.home import home_bp
-    app.register_blueprint(home_bp)
 
     from routes.course import course_bp
     app.register_blueprint(course_bp)

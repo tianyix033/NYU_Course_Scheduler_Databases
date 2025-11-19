@@ -43,7 +43,7 @@ def register():
     session["user_id"] = user_id
     session["username"] = username
     flash("Registration successful.", "success")
-    return redirect(url_for("index"))
+    return redirect(url_for("home.get_selected_course"))
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -72,13 +72,13 @@ def login():
     session["username"] = username
     flash("Logged in successfully.", "success")
     next_url = request.args.get("next")
-    return redirect(next_url or url_for("index"))
+    return redirect(next_url or url_for("home.get_selected_course"))
 
 
 @auth_bp.route("/logout", methods=["POST", "GET"])
 def logout():
     session.clear()
     flash("Logged out.", "info")
-    return redirect(url_for("index"))
+    return redirect(url_for("home.get_selected_course"))
 
 
