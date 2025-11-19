@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Create / Edit Course Selection</h2>
+    
+    <form method="GET" action="/course">
+    
+        <div class="top-input-row" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <input type="text" name="input_course_id" placeholder="Course ID" style="flex: 1;">
+            <input type="text" name="input_course_title" placeholder="Course Title" style="flex: 2;">
+            <input type="text" name="input_instructor_name" placeholder="Instructor Name" style="flex: 2;">
+            <button type="submit" style="flex: 0;">Submit</button>
+        </div>
+    
+        <hr>
+    
+        {% for course in courses %}
+        <div class="course-block">
+            <h3>Course: {{ course.title }} (ID: {{ course.course_id }})</h3>
+            {% for instructor in course.instructors %}
+            <div class="instructor-block">
+                <h4>Instructor: {{ instructor.first_name }} {{ instructor.last_name }}</h4>
+                <form action="{{ url_for('course.add_course') }}" method="POST">
+                    <input type="hidden" name="course_id" value="{{ course.course_id }}">
+                    <input type="hidden" name="instructor_id" value="{{ instructor.instructor_id }}">
+                    <button
+                        class="add-course-btn"
+                        type="button"
+                        data-course-id="{{ course.course_id }}"
+                        data-instructor-id="{{ instructor.instructor_id }}">
+                        Add Course
+                    </button>
+                </form>
+                
+                {% for section in instructor.sections %}
+                <div class="section-item">
+                    <p>Section: {{ section.section_type }} | {{ section.day_of_week }} {{ section.start_time }} - {{ section.end_time }} | {{ section.meeting_location }} | Campus: {{ section.campus }}</p>
+                </div>
+                {% endfor %}
+                
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </form>
+
+    <script>
+        document.querySelectorAll('.add-course-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const courseId = btn.dataset.courseId;
+                const instructorId = btn.dataset.instructorId;
+
+                // Send POST request
+                const response = await fetch('/course/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ course_id: courseId, instructor_id: instructorId })
+                });
+
+                if (response.ok) {
+                    // Mark all buttons for this course as "Added"
+                    document.querySelectorAll(`.add-course-btn[data-course-id="${courseId}"]`).forEach(b => {
+                        b.textContent = "Added";
+                        b.disabled = true;
+                    });
+                } else {
+                    alert("Failed to add course");
+                }
+            });
+        });
+    </script>
+{% endblock %}

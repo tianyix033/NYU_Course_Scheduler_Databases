@@ -1,13 +1,36 @@
 {% extends "base.html" %}
+
 {% block content %}
 <article>
   {% if username %}
     <h1>hello {{ username }}</h1>
+  
+    <h2>Selected Courses</h2>
+    <table>
+        <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+            <th>Delete</th>
+        </tr>
+    
+        {% for item in selected_courses %}
+        <tr>
+            <td>{{ item.title }}</td>
+            <td>{{ item.first_name }} {{ item.last_name }}</td>
+            <td>
+                <form action="/delete" method="POST">
+                    <input type="hidden" name="course_id" value="{{ item.course_id }}">
+                    <input type="hidden" name="instructor_id" value="{{ item.instructor_id }}">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    
   {% else %}
     <h1>hello</h1>
     <p><a href="{{ url_for('auth.login') }}">Login</a> or <a href="{{ url_for('auth.register') }}">Register</a> to set your username.</p>
   {% endif %}
 </article>
 {% endblock %}
-
-

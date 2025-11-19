@@ -34,6 +34,7 @@ def get_db_connection():
             password=Config.DB_PASSWORD,
             database=Config.DB_NAME
         )
+        conn.autocommit = True
         return conn
     except psycopg2.Error as e:
         logger.error(f"Database connection error: {e}")
@@ -125,7 +126,7 @@ def execute_query_single(query, params=None):
             conn.close()
 
 
-def call_procedure(procedure_name, params=None):
+def call_procedure(procedure_name, params=None, fetch=True):
     """
     Call a PostgreSQL stored procedure (PostgreSQL 11+).
     
@@ -145,7 +146,7 @@ def call_procedure(procedure_name, params=None):
     placeholders = ', '.join(['%s'] * len(params))
     query = f"CALL {procedure_name}({placeholders})"
     
-    return execute_query(query, params, fetch=True)
+    return execute_query(query, params, fetch)
 
 
 def call_function(function_name, params=None):
