@@ -10,12 +10,12 @@ def create_app() -> Flask:
     # Register blueprints
     from routes.auth import auth_bp
     app.register_blueprint(auth_bp)
+    
+    from routes.home import home_bp
+    app.register_blueprint(home_bp)
 
-    @app.route("/")
-    @login_required # include this on routes that require authentication
-    def index():
-        username = session.get("username")
-        return render_template("index.html", username=username)
+    from routes.course import course_bp
+    app.register_blueprint(course_bp)
 
     return app
 

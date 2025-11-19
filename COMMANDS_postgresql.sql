@@ -138,6 +138,8 @@ CREATE OR REPLACE FUNCTION SearchCourse(
     u_instructor_name VARCHAR(200)
 )
 RETURNS TABLE(
+    course_id VARCHAR(30),
+    instructor_id INT,
     title VARCHAR(100),
     credits INT,
     course_description TEXT,
@@ -156,6 +158,8 @@ AS $$
 BEGIN
     RETURN QUERY
     SELECT
+        c.course_id,
+        i.instructor_id,
         c.title,
         c.credits,
         c.course_description,
@@ -172,9 +176,9 @@ BEGIN
     INNER JOIN Section s ON c.course_id = s.course_id
     INNER JOIN Instructor i ON s.instructor_id = i.instructor_id
     INNER JOIN Meeting_Time m ON s.section_id = m.section_id
-    WHERE (u_course_id IS NULL OR u_course_id = '' OR c.course_id LIKE '%' || u_course_id || '%')
-        AND (u_course_title IS NULL OR u_course_title = '' OR c.title LIKE '%' || u_course_title || '%')
-        AND (u_instructor_name IS NULL OR u_instructor_name = '' OR (i.first_name || ' ' || i.last_name) LIKE '%' || u_instructor_name || '%')
+    WHERE (u_course_id IS NULL OR u_course_id = '' OR LOWER(c.course_id) LIKE '%' || LOWER(u_course_id) || '%')
+        AND (u_course_title IS NULL OR u_course_title = '' OR LOWER(c.title) LIKE '%' || LOWER(u_course_title) || '%')
+        AND (u_instructor_name IS NULL OR u_instructor_name = '' OR LOWER(i.first_name || ' ' || i.last_name) LIKE '%' || LOWER(u_instructor_name) || '%')
     ORDER BY c.course_id, i.instructor_id, s.section_id, m.day_of_week;
 END;
 $$;
