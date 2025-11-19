@@ -1,0 +1,89 @@
+/* NYU Course Planner - Minimal Styling */
+
+/* Color Palette */
+:root {
+    --primary-purple: #6b46c1;
+    --primary-blue: #3b82f6;
+    --accent-green: #10b981;
+    --accent-red: #ef4444;
+    --accent-blue: #699ef4;
+}
+
+/* Header Colors */
+h1 {
+    color: var(--primary-blue);
+}
+
+h2 {
+    color: var(--primary-blue);
+}
+
+h3 {
+    color: var(--primary-purple);
+}
+
+h4 {
+    color: var(--accent-green);
+}
+
+/* Button Colors */
+button, input[type="submit"], .add-course-btn {
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+button:hover, input[type="submit"]:hover, .add-course-btn:hover {
+    background-color: var(--accent-blue);
+}
+
+button[disabled], .add-course-btn[disabled] {
+    background-color: var(--accent-green);
+    cursor: not-allowed;
+}
+
+/* Delete Button */
+table button, form button[type="submit"] {
+    background-color: var(--accent-red);
+}
+
+table button:hover, form button[type="submit"]:hover {
+    background-color: #f87171;
+}
+
+/* Flash Messages */
+.flash {
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    font-weight: 500;
+}
+
+.flash.error {
+    background-color: #fee2e2;
+    border-color: #ef4444;
+    color: #7f1d1d;
+}
+
+.flash.success {
+    background-color: #dcfce7;
+    border-color: #22c55e;
+    color: #065f46;
+}
+
+.flash.info {
+    background-color: #dbeafe;
+    border-color: #3b82f6;
+    color: #0c4a6e;
+}
+
+.course-block {
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid var(--primary-blue);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+}

@@ -6,8 +6,34 @@ Loads environment variables and sets Flask configuration.
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file with encoding error handling
+env_path = os.path.join(os.path.dirname(__file__), '.env')
+
+if os.path.exists(env_path):
+    # Try to read .env file with encoding error handling
+    try:
+        # First try standard load_dotenv
+        load_dotenv(encoding='utf-8')
+    except (UnicodeDecodeError, Exception):
+        # If that fails, read manually with error handling
+        try:
+            with open(env_path, 'r', encoding='utf-8', errors='replace') as f:
+                content = f.read()
+            for line in content.splitlines():
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    key = key.strip()
+                    value = value.strip().strip('"').strip("'")
+                    os.environ[key] = value
+        except Exception:
+            pass
+else:
+    # If .env file doesn't exist, try standard load_dotenv
+    try:
+        load_dotenv()
+    except Exception:
+        pass
 
 class Config:
     """Application configuration class."""
@@ -36,4 +62,3 @@ class Config:
             'password': Config.DB_PASSWORD,
             'database': Config.DB_NAME
         }
-
