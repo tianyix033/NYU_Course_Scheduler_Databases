@@ -27,8 +27,9 @@
                         class="add-course-btn"
                         type="button"
                         data-course-id="{{ course.course_id }}"
-                        data-instructor-id="{{ instructor.instructor_id }}">
-                        Add Course
+                        data-instructor-id="{{ instructor.instructor_id }}"
+                        {% if instructor.is_selected %}disabled{% endif %}>
+                        {% if instructor.is_selected %}Added{% else %}Add Course{% endif %}
                     </button>
                 </form>
                 
@@ -59,8 +60,8 @@
                 });
 
                 if (response.ok) {
-                    // Mark all buttons for this course as "Added"
-                    document.querySelectorAll(`.add-course-btn[data-course-id="${courseId}"]`).forEach(b => {
+                    // Mark only the specific course-instructor pair as "Added"
+                    document.querySelectorAll(`.add-course-btn[data-course-id="${courseId}"][data-instructor-id="${instructorId}"]`).forEach(b => {
                         b.textContent = "Added";
                         b.disabled = true;
                     });

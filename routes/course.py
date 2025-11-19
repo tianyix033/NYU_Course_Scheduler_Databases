@@ -1,5 +1,5 @@
 from flask import render_template, Blueprint, request, session
-from database import call_function, call_procedure
+from database import call_function, call_procedure, execute_query
 from collections import OrderedDict
 from urllib.parse import urlencode
 from auth_utils import login_required
@@ -14,7 +14,25 @@ def get_search_course():
     instructor_name = request.args.get("input_instructor_name", "")
     courses = call_function("SearchCourse",(course_id, course_title, instructor_name))
     courses_for_template = group_courses(courses)
-    return render_template("course.html", courses= courses_for_template)
+    
+    # Get user's existing selections
+    user_id = session["user_id"]
+    user_selections = execute_query(
+        "SELECT course_id, instructor_id FROM User_Selection WHERE user_id = %s",
+        (user_id,),
+        fetch=True
+    )
+    
+    # Create a set of (course_id, instructor_id) tuples for quick lookup
+    selected_set = {(row['course_id'], row['instructor_id']) for row in user_selections}
+    
+    # Mark which courses/instructors are already selected
+    for course in courses_for_template:
+        for instructor in course['instructors']:
+            key = (course['course_id'], instructor['instructor_id'])
+            instructor['is_selected'] = key in selected_set
+    
+    return render_template("course.html", courses=courses_for_template)
 
 
 def group_courses(courses):
