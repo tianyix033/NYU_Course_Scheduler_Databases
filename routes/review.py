@@ -96,9 +96,11 @@
 
 
 
-from flask import Blueprint, render_template, request
-from database import call_function, execute_query, execute_query_single
+from flask import Blueprint, render_template, request, session, flash, redirect, url_for
+from datetime import datetime
+from database import call_function, call_procedure, execute_query, execute_query_single
 from auth_utils import login_required
+from psycopg2 import errors as pg_errors
 
 review_bp = Blueprint('review', __name__, url_prefix='/review')
 
@@ -171,9 +173,14 @@ def get_reviews(course_id: str, instructor_id: int):
         for row in distribution_results:
             rating_distribution[str(row['rating'])] = row['count']
         
-        # Format individual reviews
+        # Format individual reviews (only include reviews with comments)
         individual_reviews = []
         for r in reviews:
+            # Only include reviews that have a comment
+            comment = r.get('comment')
+            if not comment or comment.strip() == '':
+                continue
+            
             created_at = r.get('created_at')
             created_at_str = None
             if created_at:
@@ -184,9 +191,19 @@ def get_reviews(course_id: str, instructor_id: int):
             
             individual_reviews.append({
                 'rating': r.get('rating'),
-                'comment': r.get('comment'),
+                'comment': comment,
                 'created_at': created_at_str
             })
+        
+        # Check if current user already has a review for this course-instructor pair
+        user_id = session.get('user_id')
+        user_has_review = False
+        if user_id:
+            existing_review = execute_query_single(
+                "SELECT rating, comment FROM Review WHERE user_id = %s AND course_id = %s AND instructor_id = %s",
+                (user_id, course_id, instructor_id)
+            )
+            user_has_review = existing_review is not None
         
         return render_template('review.html',
                              course_id=course_id,
@@ -198,11 +215,64 @@ def get_reviews(course_id: str, instructor_id: int):
                              average_rating=average_rating,
                              review_count=review_count,
                              rating_distribution=rating_distribution,
-                             individual_reviews=individual_reviews)
+                             individual_reviews=individual_reviews,
+                             user_has_review=user_has_review)
     
     except Exception as e:
         return render_template('review.html',
                              error=f"Error loading reviews: {str(e)}",
                              course_id=course_id,
                              instructor_id=instructor_id)
+
+
+@review_bp.route("/<string:course_id>/<int:instructor_id>/create", methods=["POST"])
+@login_required
+def create_review(course_id: str, instructor_id: int):
+    """
+    Create a new review for a course-instructor pair.
+    """
+    user_id = session.get('user_id')
+    
+    # Validate required fields
+    rating = request.form.get('rating')
+    comment = request.form.get('comment', '')
+    
+    if not rating:
+        flash('Rating is required.', 'error')
+        return redirect(url_for('review.get_reviews', course_id=course_id, instructor_id=instructor_id))
+    
+    try:
+        rating = int(rating)
+        if not (1 <= rating <= 5):
+            flash('Rating must be between 1 and 5.', 'error')
+            return redirect(url_for('review.get_reviews', course_id=course_id, instructor_id=instructor_id))
+    except ValueError:
+        flash('Invalid rating value.', 'error')
+        return redirect(url_for('review.get_reviews', course_id=course_id, instructor_id=instructor_id))
+    
+    try:
+        # Check if user already has a review for this course-instructor pair
+        existing_review = execute_query_single(
+            "SELECT user_id FROM Review WHERE user_id = %s AND course_id = %s AND instructor_id = %s",
+            (user_id, course_id, instructor_id)
+        )
+        
+        if existing_review:
+            flash('You have already submitted a review for this course-instructor pair.', 'error')
+            return redirect(url_for('review.get_reviews', course_id=course_id, instructor_id=instructor_id))
+        
+        # Call PostReview procedure with current timestamp
+        current_timestamp = datetime.now()
+        call_procedure("PostReview", (user_id, course_id, instructor_id, rating, comment, current_timestamp), fetch=False)
+        
+        flash('Review submitted successfully!', 'success')
+        return redirect(url_for('review.get_reviews', course_id=course_id, instructor_id=instructor_id))
+    
+    except pg_errors.UniqueViolation:
+        # Handle duplicate review (shouldn't happen since we check first, but just in case)
+        flash('You have already submitted a review for this course-instructor pair.', 'error')
+        return redirect(url_for('review.get_reviews', course_id=course_id, instructor_id=instructor_id))
+    except Exception as e:
+        flash(f'Error submitting review: {str(e)}', 'error')
+        return redirect(url_for('review.get_reviews', course_id=course_id, instructor_id=instructor_id))
 

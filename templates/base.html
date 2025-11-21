@@ -33,8 +33,7 @@
 <body>
     <nav class="container">
         <ul>
-            <li><strong>NYU Course Planner</strong></li>
-            <li><a href="/">Selected Courses</a></li>
+            <li><strong><a href="{{ url_for('home.get_selected_course') }}" style="text-decoration: none; color: inherit;">NYU Course Planner</a></strong></li>
             <li><a href="/course">Course Search</a></li>
         </ul>
         <ul>

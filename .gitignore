@@ -2,4 +2,15 @@
 FLASK_SECRET_KEY_GUIDE.md
 IMPLEMENTATION.md
 SETUP_CHECKLIST.md
-temp
+temp/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+venv/
+env/
+ENV/
