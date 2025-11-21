@@ -20,18 +20,24 @@
             {% for instructor in course.instructors %}
             <div class="instructor-block">
                 <h4>Instructor: {{ instructor.first_name }} {{ instructor.last_name }}</h4>
-                <form action="{{ url_for('course.add_course') }}" method="POST">
-                    <input type="hidden" name="course_id" value="{{ course.course_id }}">
-                    <input type="hidden" name="instructor_id" value="{{ instructor.instructor_id }}">
-                    <button
-                        class="add-course-btn"
-                        type="button"
-                        data-course-id="{{ course.course_id }}"
-                        data-instructor-id="{{ instructor.instructor_id }}"
-                        {% if instructor.is_selected %}disabled{% endif %}>
-                        {% if instructor.is_selected %}Added{% else %}Add Course{% endif %}
-                    </button>
-                </form>
+                <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                    <form action="{{ url_for('course.add_course') }}" method="POST" style="margin: 0;">
+                        <input type="hidden" name="course_id" value="{{ course.course_id }}">
+                        <input type="hidden" name="instructor_id" value="{{ instructor.instructor_id }}">
+                        <button
+                            class="add-course-btn"
+                            type="button"
+                            data-course-id="{{ course.course_id }}"
+                            data-instructor-id="{{ instructor.instructor_id }}"
+                            {% if instructor.is_selected %}disabled{% endif %}>
+                            {% if instructor.is_selected %}Added{% else %}Add Course{% endif %}
+                        </button>
+                    </form>
+                    <a href="{{ url_for('review.get_reviews', course_id=course.course_id, instructor_id=instructor.instructor_id) }}" 
+                       style="text-decoration: none; color: var(--primary-blue);">
+                        View Reviews
+                    </a>
+                </div>
                 
                 {% for section in instructor.sections %}
                 <div class="section-item">

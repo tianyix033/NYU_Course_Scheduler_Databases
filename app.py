@@ -18,6 +18,9 @@ def create_app() -> Flask:
 
     from routes.course import course_bp
     app.register_blueprint(course_bp)
+    
+    from routes.review import review_bp
+    app.register_blueprint(review_bp)
 
     return app
 

@@ -208,7 +208,7 @@ BEGIN
         c.title,
         c.credits,
         c.course_description,
-        (i.first_name || ' ' || i.last_name) AS instructor_name
+        ((i.first_name || ' ' || i.last_name)::VARCHAR(200)) AS instructor_name
     FROM Review r
     INNER JOIN Course c ON c.course_id = r.course_id
     INNER JOIN Instructor i ON i.instructor_id = r.instructor_id
