@@ -27,6 +27,53 @@
         </tr>
         {% endfor %}
     </table>
+    {% if selected_courses %}
+    <section class="selection-details">
+      <h2>Selected course sections</h2>
+      <div class="selection-cards">
+        {% for course in selected_courses %}
+          <article class="selection-card">
+            <header class="selection-card__header">
+              <div class="selection-card__title">{{ course.title }}</div>
+              <div class="selection-card__subtitle">
+                {{ course.first_name }} {{ course.last_name }}
+              </div>
+            </header>
+            <div class="selection-card__sections">
+              {% if course.sections %}
+                {% for section in course.sections %}
+                  <div class="selection-section">
+                    <div class="selection-section__top">
+                      <span class="selection-section__type">{{ section.section_type }}</span>
+                      <span class="selection-section__campus">{{ section.campus or "TBA" }}</span>
+                    </div>
+                    {% if section.meetings %}
+                      <ul class="selection-section__meetings">
+                        {% for meeting in section.meetings %}
+                          <li>
+                            <span class="meeting-day">{{ meeting.day_label }}</span>
+                            <span class="meeting-time">{{ meeting.time_range }}</span>
+                            <span class="meeting-location">{{ meeting.location or "TBA" }}</span>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    {% else %}
+                      <p class="selection-section__empty">Meeting data unavailable</p>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              {% else %}
+                <p class="selection-section__empty">No section data saved.</p>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+    <p class="schedule-link">
+        <a class="secondary" href="{{ url_for('schedule.view_schedule') }}">Preview auto-generated schedule</a>
+    </p>
     
   {% else %}
     <h1>hello</h1>

@@ -3,6 +3,34 @@ from database import call_function, call_procedure, execute_query
 from collections import OrderedDict
 from urllib.parse import urlencode
 from auth_utils import login_required
+from utils.meeting_utils import format_time_range, get_day_label
+
+COURSE_SEARCH_QUERY = """
+SELECT
+    c.course_id,
+    i.instructor_id,
+    s.section_id,
+    c.title,
+    c.credits,
+    c.course_description,
+    c.prerequisites,
+    s.section_type,
+    s.campus,
+    m.day_of_week,
+    m.start_time,
+    m.end_time,
+    m.meeting_location,
+    i.first_name,
+    i.last_name
+FROM Course c
+INNER JOIN Section s ON c.course_id = s.course_id
+INNER JOIN Instructor i ON s.instructor_id = i.instructor_id
+INNER JOIN Meeting_Time m ON s.section_id = m.section_id
+WHERE (%(course_id)s IS NULL OR %(course_id)s = '' OR LOWER(c.course_id) LIKE '%%' || LOWER(%(course_id)s) || '%%')
+    AND (%(course_title)s IS NULL OR %(course_title)s = '' OR LOWER(c.title) LIKE '%%' || LOWER(%(course_title)s) || '%%')
+    AND (%(instructor_name)s IS NULL OR %(instructor_name)s = '' OR LOWER(i.first_name || ' ' || i.last_name) LIKE '%%' || LOWER(%(instructor_name)s) || '%%')
+ORDER BY c.course_id, i.instructor_id, s.section_id, m.day_of_week;
+"""
 
 course_bp = Blueprint("course", __name__, url_prefix="/course")
 
@@ -12,7 +40,15 @@ def get_search_course():
     course_id = request.args.get("input_course_id", "")
     course_title = request.args.get("input_course_title", "")
     instructor_name = request.args.get("input_instructor_name", "")
-    courses = call_function("SearchCourse",(course_id, course_title, instructor_name))
+    courses = execute_query(
+        COURSE_SEARCH_QUERY,
+        {
+            "course_id": course_id,
+            "course_title": course_title,
+            "instructor_name": instructor_name,
+        },
+        fetch=True,
+    )
     courses_for_template = group_courses(courses)
     
     # Get user's existing selections
@@ -36,54 +72,72 @@ def get_search_course():
 
 
 def group_courses(courses):
-    grouped_courses = OrderedDict()  # maintain order from query
+    grouped_courses = OrderedDict()
 
     for row in courses:
-        course_id = row['course_id']
-        instructor_id = row['instructor_id']
-        section_key = row['section_type'] + str(row['start_time'])  # unique key for section
-        
-        # add course if not exists
+        course_id = row["course_id"]
+        instructor_id = row["instructor_id"]
+        section_id = row["section_id"]
+
         if course_id not in grouped_courses:
             grouped_courses[course_id] = {
-                'course_id': course_id,
-                'title': row['title'],
-                'credits': row['credits'],
-                'course_description': row['course_description'],
-                'prerequisites': row['prerequisites'],
-                'instructors': OrderedDict()
+                "course_id": course_id,
+                "title": row["title"],
+                "credits": row["credits"],
+                "course_description": row["course_description"],
+                "prerequisites": row["prerequisites"],
+                "instructors": OrderedDict(),
             }
 
         course = grouped_courses[course_id]
 
-        # add instructor if not exists
-        if instructor_id not in course['instructors']:
-            course['instructors'][instructor_id] = {
-                'instructor_id': instructor_id,
-                'first_name': row['first_name'],
-                'last_name': row['last_name'],
-                'sections': OrderedDict()
+        if instructor_id not in course["instructors"]:
+            course["instructors"][instructor_id] = {
+                "instructor_id": instructor_id,
+                "first_name": row["first_name"],
+                "last_name": row["last_name"],
+                "sections": OrderedDict(),
             }
 
-        instructor = course['instructors'][instructor_id]
+        instructor = course["instructors"][instructor_id]
 
-        # add section if not exists
-        if section_key not in instructor['sections']:
-            instructor['sections'][section_key] = {
-                'section_type': row['section_type'],
-                'campus': row['campus'],
-                'day_of_week': row['day_of_week'],
-                'start_time': row['start_time'],
-                'end_time': row['end_time'],
-                'meeting_location': row['meeting_location']
+        section = instructor["sections"].setdefault(
+            section_id,
+            {
+                "section_id": section_id,
+                "section_type": row["section_type"],
+                "campus": row["campus"],
+                "meetings": [],
+                "meeting_signatures": set(),
+            },
+        )
+
+        meeting_location = row["meeting_location"] or row["campus"] or "TBA"
+        meeting_key = (
+            row["day_of_week"],
+            row["start_time"],
+            row["end_time"],
+            meeting_location,
+        )
+
+        if meeting_key in section["meeting_signatures"]:
+            continue
+
+        section["meeting_signatures"].add(meeting_key)
+        section["meetings"].append(
+            {
+                "day_of_week": row["day_of_week"],
+                "day_label": get_day_label(row["day_of_week"]),
+                "time_range": format_time_range(row["start_time"], row["end_time"]),
+                "location": meeting_location,
             }
+        )
 
-    # convert OrderedDicts to lists for Jinja
     result = []
     for course in grouped_courses.values():
-        course['instructors'] = list(course['instructors'].values())
-        for instructor in course['instructors']:
-            instructor['sections'] = list(instructor['sections'].values())
+        course["instructors"] = list(course["instructors"].values())
+        for instructor in course["instructors"]:
+            instructor["sections"] = list(instructor["sections"].values())
         result.append(course)
 
     return result

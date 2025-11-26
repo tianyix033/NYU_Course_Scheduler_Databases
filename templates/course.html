@@ -41,7 +41,23 @@
                 
                 {% for section in instructor.sections %}
                 <div class="section-item">
-                    <p>Section: {{ section.section_type }} | {{ section.day_of_week }} {{ section.start_time }} - {{ section.end_time }} | {{ section.meeting_location }} | Campus: {{ section.campus }}</p>
+                    <div class="section-item__top">
+                        <strong>{{ section.section_type }}</strong>
+                        <span>{{ section.campus or "TBA" }}</span>
+                    </div>
+                    {% if section.meetings %}
+                    <ul class="section-item__meetings">
+                        {% for meeting in section.meetings %}
+                        <li>
+                            <span class="meeting-day">{{ meeting.day_label }}</span>
+                            <span class="meeting-time">{{ meeting.time_range }}</span>
+                            <span class="meeting-location">{{ meeting.location }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="selection-section__empty">Meeting data unavailable</p>
+                    {% endif %}
                 </div>
                 {% endfor %}
                 

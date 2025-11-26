@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article class="schedule-page">
+  <header class="schedule-page__header">
+    <h1>Auto-generated schedule</h1>
+    <p class="schedule-page__intro">
+      Each option represents a conflict-free mapping of the courses and professors you've selected.
+      We try to include every available lecture and lab once per course to keep the planner accurate.
+    </p>
+    <p class="schedule-page__selected">
+      {{ unique_course_count }} course{{ 's' if unique_course_count != 1 else '' }} in your plan.
+    </p>
+    {% if stats_message %}
+      <p class="schedule-page__info">{{ stats_message }}</p>
+    {% endif %}
+  </header>
+
+  {% if status_message %}
+    <div class="flash {{ status_category if status_category else 'info' }}" role="alert">
+      {{ status_message }}
+    </div>
+  {% endif %}
+
+  {% if schedule_options %}
+    <div class="schedule-list">
+      {% for option in schedule_options %}
+        <section class="schedule-card">
+          <div class="schedule-card__header">
+            <h2>Option {{ option.id }}</h2>
+          </div>
+
+          <div class="schedule-grid">
+            {% for day in day_columns %}
+              <div class="day-column">
+                <div class="day-column__label">{{ day.label }}</div>
+                {% set day_events = option.events_by_day[day.key] %}
+                {% if day_events %}
+                  {% for event in day_events %}
+                    <article class="event-card">
+                      <div class="event-card__title">{{ event.course_title }}</div>
+                      <div class="event-card__meta">
+                        {{ event.section_type }} • {{ event.instructor_name }}
+                      </div>
+                      <div class="event-card__time">{{ event.time_range }}</div>
+                      <div class="event-card__location">{{ event.location }}</div>
+                      <div class="event-card__day">{{ event.display_days }}</div>
+                    </article>
+                  {% endfor %}
+                {% else %}
+                  <p class="empty-day">No events</p>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+
+          {% set tba_events = option.events_by_day["TBA"] %}
+          {% if tba_events %}
+            <div class="schedule-card__tba">
+              <h3>Unscheduled / TBA</h3>
+              <ul>
+                {% for event in tba_events %}
+                  <li>{{ event.course_title }} — {{ event.section_type }} ({{ event.location }})</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+        </section>
+      {% endfor %}
+    </div>
+
+    {% if limit_reached %}
+      <p class="schedule-limited">Displaying the first {{ max_schedules }} options that fit your selections.</p>
+    {% endif %}
+  {% elif not status_message %}
+    <p class="schedule-empty">No schedule data is available right now; add some selections or try again later.</p>
+  {% endif %}
+</article>
+{% endblock %}
+

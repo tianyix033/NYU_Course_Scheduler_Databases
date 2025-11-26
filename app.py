@@ -22,6 +22,9 @@ def create_app() -> Flask:
     from routes.review import review_bp
     app.register_blueprint(review_bp)
 
+    from routes.schedule import schedule_bp
+    app.register_blueprint(schedule_bp)
+
     return app
 
 if __name__ == "__main__":
