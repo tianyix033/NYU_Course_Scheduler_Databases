@@ -137,7 +137,8 @@ if __name__ == "__main__":
     print("=" * 60)
     print("Database Setup Script")
     print("=" * 60)
-    print("This script will import COMMANDS_postgresql.sql into PostgreSQL")
+    print("This script will import COMMANDS_postgresql.sql and")
+    print("additional_commands_postgressql.sql into PostgreSQL")
     print("Make sure your .env file is configured correctly.")
     print("=" * 60)
     print()
@@ -157,16 +158,35 @@ if __name__ == "__main__":
     print(f"Found SQL file: {sql_file}")
     print()
     
-    # Execute the SQL file
+    # Execute the main SQL file
     success = execute_sql_file(sql_file)
     
-    if success:
+    if not success:
         print("\n" + "=" * 60)
-        print("Database setup completed successfully!")
-        print("=" * 60)
-        exit(0)
-    else:
-        print("\n" + "=" * 60)
-        print("Database setup encountered errors. Check logs above.")
+        print("Database setup encountered errors in main file. Check logs above.")
         print("=" * 60)
         exit(1)
+    
+    # Execute additional commands file if it exists
+    additional_file = "additional_commands_postgressql.sql"
+    if os.path.exists(additional_file):
+        print("\n" + "=" * 60)
+        print(f"Executing additional commands: {additional_file}")
+        print("=" * 60)
+        print()
+        
+        additional_success = execute_sql_file(additional_file)
+        
+        if not additional_success:
+            print("\n" + "=" * 60)
+            print("Warning: Additional commands file encountered errors.")
+            print("Main database setup completed, but some additional data may be missing.")
+            print("=" * 60)
+            exit(1)
+    else:
+        print(f"\nNote: Additional commands file '{additional_file}' not found. Skipping.")
+    
+    print("\n" + "=" * 60)
+    print("Database setup completed successfully!")
+    print("=" * 60)
+    exit(0)
