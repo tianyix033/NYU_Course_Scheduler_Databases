@@ -87,9 +87,85 @@ def execute_sql_file(file_path):
         cursor = conn.cursor()
         print("Executing SQL statements...")
         
-        # Split SQL into statements by semicolon
-        # This works for most SQL, including DO blocks which end with END $$;
-        statements = [stmt.strip() for stmt in sql_content.split(';') if stmt.strip() and not stmt.strip().startswith('--')]
+        # Split SQL into statements properly, handling:
+        # - Dollar-quoted strings ($$...$$, $tag$...$tag$)
+        # - Single-quoted strings ('...')
+        # - Only split on semicolons outside of quotes
+        
+        def split_sql_statements(sql_text):
+            """Split SQL text into individual statements, respecting quotes."""
+            statements = []
+            current = []
+            i = 0
+            in_single_quote = False
+            in_dollar_quote = False
+            dollar_tag = None
+            
+            while i < len(sql_text):
+                char = sql_text[i]
+                
+                # Handle dollar-quoted strings ($$ or $tag$)
+                if char == '$' and not in_single_quote:
+                    # Find the tag
+                    tag_start = i
+                    i += 1
+                    while i < len(sql_text) and sql_text[i] != '$':
+                        i += 1
+                    if i < len(sql_text):
+                        tag = sql_text[tag_start:i+1]
+                        if dollar_tag is None:
+                            # Opening tag
+                            dollar_tag = tag
+                            in_dollar_quote = True
+                            current.append(sql_text[tag_start:i+1])
+                        elif tag == dollar_tag:
+                            # Closing tag
+                            dollar_tag = None
+                            in_dollar_quote = False
+                            current.append(sql_text[tag_start:i+1])
+                        else:
+                            current.append(sql_text[tag_start:i+1])
+                        i += 1
+                        continue
+                
+                # Handle single-quoted strings (only if not in dollar quote)
+                if char == "'" and not in_dollar_quote:
+                    # Check if it's escaped
+                    if i > 0 and sql_text[i-1] == '\\':
+                        current.append(char)
+                        i += 1
+                        continue
+                    in_single_quote = not in_single_quote
+                    current.append(char)
+                    i += 1
+                    continue
+                
+                # Check for statement terminator (semicolon outside quotes)
+                if char == ';' and not in_single_quote and not in_dollar_quote:
+                    current.append(char)
+                    stmt = ''.join(current).strip()
+                    if stmt and not stmt.startswith('--'):
+                        statements.append(stmt)
+                    current = []
+                    i += 1
+                    # Skip whitespace after semicolon
+                    while i < len(sql_text) and sql_text[i] in ' \t\n\r':
+                        i += 1
+                    continue
+                
+                current.append(char)
+                i += 1
+            
+            # Add remaining statement
+            if current:
+                stmt = ''.join(current).strip()
+                if stmt and not stmt.startswith('--'):
+                    statements.append(stmt)
+            
+            return statements
+        
+        statements = split_sql_statements(sql_content)
+        print(f"  Parsed {len(statements)} SQL statements")
         
         executed_count = 0
         skipped_count = 0
@@ -107,12 +183,12 @@ def execute_sql_file(file_path):
                 error_msg = str(e).lower()
                 if 'already exists' in error_msg or 'duplicate' in error_msg:
                     skipped_count += 1
-                    if i <= 5 or i % 20 == 0:  # Show first 5 and every 20th
+                    if i <= 5 or i % 20 == 0:
                         print(f"  Statement {i}: Already exists (skipping)")
                     continue
                 else:
                     error_count += 1
-                    if error_count <= 5:  # Show first 5 errors
+                    if error_count <= 5:
                         print(f"  Error in statement {i}: {e}")
                     continue
         

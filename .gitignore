@@ -3,6 +3,7 @@ FLASK_SECRET_KEY_GUIDE.md
 IMPLEMENTATION.md
 SETUP_CHECKLIST.md
 temp/
+misc/
 
 # Python cache files
 __pycache__/
