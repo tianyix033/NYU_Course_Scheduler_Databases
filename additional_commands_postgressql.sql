@@ -124,8 +124,7 @@ INSERT INTO Section (section_id, course_id, instructor_id, section_type, campus)
 (22761, 'ECE-UY 4144', 39493, 'Lab', 'Brooklyn Campus'),
 (22774, 'ECE-UY 4144', 39493, 'Lab', 'Brooklyn Campus'),
 (22790, 'ECE-UY 4144', 39493, 'Lab', 'Brooklyn Campus'),
-(22791, 'ECE-UY 4144', 39493, 'Lab', 'Brooklyn Campus')
-ON CONFLICT (section_id) DO NOTHING;
+(22791, 'ECE-UY 4144', 39493, 'Lab', 'Brooklyn Campus'),
 (6616, 'CS-UY 1113', 40007, 'Lecture', 'Brooklyn Campus'),
 (6617, 'CS-UY 1113', 40007, 'Lecture', 'Brooklyn Campus'),
 (6618, 'CS-UY 1113', 40008, 'Lecture', 'Brooklyn Campus'),
@@ -177,7 +176,8 @@ ON CONFLICT (section_id) DO NOTHING;
 (6389, 'CS-UY 4773', 40034, 'Lecture', 'Brooklyn Campus'),
 (6390, 'CS-UY 4783', 40035, 'Lecture', 'Brooklyn Campus'),
 (6571, 'CS-UY 4793', 40036, 'Lecture', 'Brooklyn Campus'),
-(4090, 'TCS-UY 4504', 40037, 'Lecture', 'Brooklyn Campus');
+(4090, 'TCS-UY 4504', 40037, 'Lecture', 'Brooklyn Campus')
+ON CONFLICT (section_id) DO NOTHING;
 
 
 
