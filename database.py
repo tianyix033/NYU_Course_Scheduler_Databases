@@ -27,13 +27,16 @@ def get_db_connection():
         psycopg2.Error: If connection fails
     """
     try:
-        conn = psycopg2.connect(
-            host=Config.DB_HOST,
-            port=Config.DB_PORT,
-            user=Config.DB_USER,
-            password=Config.DB_PASSWORD,
-            database=Config.DB_NAME
-        )
+        if Config.DATABASE_URL:
+            conn = psycopg2.connect(Config.DATABASE_URL)
+        else:
+            conn = psycopg2.connect(
+                host=Config.DB_HOST,
+                port=Config.DB_PORT,
+                user=Config.DB_USER,
+                password=Config.DB_PASSWORD,
+                database=Config.DB_NAME
+            )
         conn.autocommit = True
         return conn
     except psycopg2.Error as e:
@@ -67,9 +70,8 @@ def execute_query(query, params=None, fetch=False):
             result = cur.fetchall()
             # Convert RealDictRow to regular dict for easier JSON serialization
             result = [dict(row) for row in result]
-        else:
-            conn.commit()
-            result = None
+        # Note: autocommit is True, so no explicit commit needed
+        result = None if not fetch else result
         
         cur.close()
         return result

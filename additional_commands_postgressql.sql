@@ -41,7 +41,8 @@ INSERT INTO Course (course_id, title, credits, course_description, prerequisites
 ('CS-UY 4773', 'Penetration Testing and Vulnerability Analysis', 3, 'The course will start off with an in-depth review of the exploitation mitigations introduced in modern operating systems. The instructors will demonstrate their limitations through simple examples and gradually develop the basic exploitation techniques into more complicated methods applicable to real-world exploitation. Unlike most other exploitation courses, we will focus on approaching exploitation as a creative problem-solving process rather than an exercise of applying cookbook techniques to common types of vulnerabilities. Most of the course will focus on the hands-on application of the material through exercises and leading the students through the development of reliable exploits for recently patched vulnerabilities in widely used software.', 'Prerequisites for Brooklyn Engineering Students: CS-UY 3933 and (CS-UY 2134 or CS-UY 1134) and (CS-UY 2124 or CS-UY 1124) (C- or better). | Prerequisites for CAS Students: CS-UY 3933 and CSCI-UA 201. | Prerequisites for Abu Dhabi Students: CS-UY 3933 and CS-AD 103'),
 ('CS-UY 4783', 'Applied Cryptography', 3, 'This course examines Modern Cryptography from a both theoretical and applied perspective, with emphasis on “provable security” and “application case studies”. The course looks particularly at cryptographic primitives that are building blocks of various cryptographic applications. The course studies notions of security for a given cryptographic primitive, its various constructions and respective security analysis based on the security notion. The cryptographic primitives covered include pseudorandom functions, symmetric encryption (block ciphers), hash functions and random oracles, message authentication codes, asymmetric encryption, digital signatures and authenticated key exchange. The course covers how to build provably secure cryptographic protocols (e.g., secure message transmission, identification schemes, secure function evaluation, etc.), and various number-theoretic assumptions upon which cryptography is based. Also covered: implementation issues (e.g., key lengths, key management, standards, etc.) and, as application case studies, a number of real-life scenarios currently using solutions from modern cryptography.', 'Prerequisite: (CS-UY 2134 or CS-UY 1134) and (CS-UY 2124 or CS-UY 1124) (C- or better) and MA-UY 2314.'),
 ('CS-UY 4793', 'Computer Networking', 3, 'This course takes a top-down approach to computer networking. After an overview of computer networks and the Internet, the course covers the application layer, transport layer, network layer and link layers. Topics at the application layer include client-server architectures, P2P architectures, DNS and HTTP and Web applications. Topics at the transport layer include multiplexing, connectionless transport and UDP, principles or reliable data transfer, connection-oriented transport and TCP and TCP congestion control. Topics at the network layer include forwarding, router architecture, the IP protocol and routing protocols including OSPF and BGP. Topics at the link layer include multiple-access protocols, ALOHA, CSMA/CD, Ethernet, CSMA/CA, wireless 802.11 networks and link-layer switches. The course includes simple quantitative delay and throughput modeling, socket programming and network application development and Ethereal labs.', 'Prerequisite for Brooklyn Students: (CS-UY 2134 or CS-UY 1134) and (CS-UY 2124 or CS-UY 1124) (C- or better) | Prerequisite for Abu Dhabi Students: ENGR-UH 3510 or CS-UH 1050 (C- or better) | Prerequisite for Shanghai Students: CSCI-SHU 210 (C- or better)'),
-('TCS-UY 4504', 'Advanced Seminar in Technology, Culture, and Society', 4, 'The Advanced Seminar is a writing- and research-intensive course that will explore in-depth a topic in Technology, Culture, and Society, requiring practice of both writing and research skills. Topics vary by section; see Albert for detailed topic descriptions.', 'Prerequisite for Brooklyn: (EXPOS-UA 1, EXPOS-UA 4, EXPOS-UA 5, EXPOS-UA 9, ASPP-UT 2, WREX-UF 101 or WRCI-UF 102) and one TCS elective course and Junior/Senior standing. | Prerequisite for Global: (EXPOS-UA 1, EXPOS-UA 4, EXPOS-UA 5, EXPOS-UA 9, ASPP-UT 2, WREX-UF 101 or WRCI-UF 102).');
+('TCS-UY 4504', 'Advanced Seminar in Technology, Culture, and Society', 4, 'The Advanced Seminar is a writing- and research-intensive course that will explore in-depth a topic in Technology, Culture, and Society, requiring practice of both writing and research skills. Topics vary by section; see Albert for detailed topic descriptions.', 'Prerequisite for Brooklyn: (EXPOS-UA 1, EXPOS-UA 4, EXPOS-UA 5, EXPOS-UA 9, ASPP-UT 2, WREX-UF 101 or WRCI-UF 102) and one TCS elective course and Junior/Senior standing. | Prerequisite for Global: (EXPOS-UA 1, EXPOS-UA 4, EXPOS-UA 5, EXPOS-UA 9, ASPP-UT 2, WREX-UF 101 or WRCI-UF 102).')
+ON CONFLICT (course_id) DO NOTHING;
 
 
 
@@ -75,7 +76,6 @@ INSERT INTO Instructor (instructor_id, first_name, last_name) VALUES
 (40025, 'Rachel', 'Greenstadt'),
 (40026, 'Rosanna', 'Bellini'),
 (40027, 'Delaram', 'Kahrobaei'),
-(40010, 'Peter', 'DePasquale'),
 (40028, 'Fred', 'Strauss'),
 (40029, 'Eugene', 'Callahan'),
 (40030, 'Yi-Jen', 'Chiang'),
@@ -85,7 +85,8 @@ INSERT INTO Instructor (instructor_id, first_name, last_name) VALUES
 (40034, 'Mantej', 'Rajpal'),
 (40035, 'Giovanni', 'Di Crescenzo'),
 (40036, 'Lucas', 'O Rourke'),
-(40037, 'Lindsay', 'Anderberg');
+(40037, 'Lindsay', 'Anderberg')
+ON CONFLICT (instructor_id) DO NOTHING;
 
 
 --additional for course_instructor
@@ -123,7 +124,8 @@ INSERT INTO Section (section_id, course_id, instructor_id, section_type, campus)
 (22761, 'ECE-UY 4144', 39493, 'Lab', 'Brooklyn Campus'),
 (22774, 'ECE-UY 4144', 39493, 'Lab', 'Brooklyn Campus'),
 (22790, 'ECE-UY 4144', 39493, 'Lab', 'Brooklyn Campus'),
-(22791, 'ECE-UY 4144', 39493, 'Lab', 'Brooklyn Campus'),
+(22791, 'ECE-UY 4144', 39493, 'Lab', 'Brooklyn Campus')
+ON CONFLICT (section_id) DO NOTHING;
 (6616, 'CS-UY 1113', 40007, 'Lecture', 'Brooklyn Campus'),
 (6617, 'CS-UY 1113', 40007, 'Lecture', 'Brooklyn Campus'),
 (6618, 'CS-UY 1113', 40008, 'Lecture', 'Brooklyn Campus'),
@@ -311,4 +313,5 @@ INSERT INTO Meeting_Time (meeting_id, section_id, day_of_week, start_time, end_t
 (40126, 6571, 'M', '17:00:00', '18:20:00', '2 MetroTech Center Room 801'),
 (40127, 6571, 'W', '17:00:00', '18:20:00', '2 MetroTech Center Room 801'),
 (40128, 4090, 'T', '16:00:00', '17:50:00', 'Jacobs Hall, 6 Metrotech Room 302'),
-(40129, 4090, 'TR', '16:00:00', '17:50:00', 'Jacobs Hall, 6 Metrotech Room 302');
+(40129, 4090, 'TR', '16:00:00', '17:50:00', 'Jacobs Hall, 6 Metrotech Room 302')
+ON CONFLICT (meeting_id) DO NOTHING;

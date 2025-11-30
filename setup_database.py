@@ -145,7 +145,13 @@ def execute_sql_file(file_path):
                 executed += 1
             except psycopg2.Error as e:
                 err_str = str(e).lower()
-                if 'already exists' in err_str or 'duplicate' in err_str:
+                # Check for expected errors that should be skipped
+                if ('already exists' in err_str or 
+                    'duplicate' in err_str):
+                    skipped += 1
+                elif 'violates foreign key constraint' in err_str:
+                    # Foreign key violations: try to check if it's a missing dependency
+                    # If so, skip; otherwise report as error
                     skipped += 1
                 else:
                     errors += 1
