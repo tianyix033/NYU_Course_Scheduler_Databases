@@ -34,13 +34,17 @@ def execute_sql_file(file_path):
     # Connect to database
     try:
         print("Connecting to database...")
-        conn = psycopg2.connect(
-            host=Config.DB_HOST,
-            port=Config.DB_PORT,
-            user=Config.DB_USER,
-            password=Config.DB_PASSWORD,
-            database=Config.DB_NAME
-        )
+        # Use DATABASE_URL if available (Heroku), otherwise use individual config
+        if Config.DATABASE_URL:
+            conn = psycopg2.connect(Config.DATABASE_URL)
+        else:
+            conn = psycopg2.connect(
+                host=Config.DB_HOST,
+                port=Config.DB_PORT,
+                user=Config.DB_USER,
+                password=Config.DB_PASSWORD,
+                database=Config.DB_NAME
+            )
         print("Connected to database")
     except psycopg2.OperationalError as e:
         # Handle error messages that might be in system locale encoding (GBK)
@@ -84,26 +88,42 @@ def execute_sql_file(file_path):
         print("Executing SQL statements...")
         
         # Split SQL into statements by semicolon
+        # This works for most SQL, including DO blocks which end with END $$;
         statements = [stmt.strip() for stmt in sql_content.split(';') if stmt.strip() and not stmt.strip().startswith('--')]
         
         executed_count = 0
+        skipped_count = 0
+        error_count = 0
+        
         for i, statement in enumerate(statements, 1):
+            if not statement.strip():
+                continue
             try:
                 cursor.execute(statement)
                 executed_count += 1
+                if i % 10 == 0:
+                    print(f"  Processed {i}/{len(statements)} statements...")
             except psycopg2.Error as e:
                 error_msg = str(e).lower()
                 if 'already exists' in error_msg or 'duplicate' in error_msg:
-                    print(f"Statement {i}: Object already exists (skipping)")
+                    skipped_count += 1
+                    if i <= 5 or i % 20 == 0:  # Show first 5 and every 20th
+                        print(f"  Statement {i}: Already exists (skipping)")
                     continue
                 else:
-                    print(f"Error in statement {i}: {e}")
+                    error_count += 1
+                    if error_count <= 5:  # Show first 5 errors
+                        print(f"  Error in statement {i}: {e}")
                     continue
         
         conn.commit()
         cursor.close()
         conn.close()
-        print(f"Executed {executed_count} SQL statements successfully!")
+        print(f"\nSummary:")
+        print(f"  Executed: {executed_count} statements")
+        print(f"  Skipped (already exists): {skipped_count} statements")
+        if error_count > 0:
+            print(f"  Errors: {error_count} statements")
         print("Database setup complete")
         return True
     except Exception as e:
@@ -122,12 +142,31 @@ if __name__ == "__main__":
     print("=" * 60)
     print()
     
+    # Try COMMANDS_postgresql.sql first (PostgreSQL version)
     sql_file = "COMMANDS_postgresql.sql"
     
     if not os.path.exists(sql_file):
         print(f"SQL file not found: {sql_file}")
         print(f"Current directory: {os.getcwd()}")
+        print("Trying alternative file...")
+        sql_file = "COMMANDS.sql"
+        if not os.path.exists(sql_file):
+            print(f"Alternative file also not found: {sql_file}")
+            exit(1)
+    
+    print(f"Found SQL file: {sql_file}")
+    print()
+    
+    # Execute the SQL file
+    success = execute_sql_file(sql_file)
+    
+    if success:
+        print("\n" + "=" * 60)
+        print("Database setup completed successfully!")
+        print("=" * 60)
+        exit(0)
     else:
-        print(f"Found SQL file: {sql_file}")
-        print()
-        execute_sql_file(sql_file)
+        print("\n" + "=" * 60)
+        print("Database setup encountered errors. Check logs above.")
+        print("=" * 60)
+        exit(1)

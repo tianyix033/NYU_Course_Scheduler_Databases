@@ -42,11 +42,24 @@ class Config:
     SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
     
     # Database configuration
-    DB_HOST = os.getenv('DB_HOST', 'localhost')
-    DB_PORT = os.getenv('DB_PORT', '5432')
-    DB_USER = os.getenv('DB_USER', 'postgres')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
-    DB_NAME = os.getenv('DB_NAME', 'course_planner')
+    # Heroku provides DATABASE_URL, parse it if available
+    DATABASE_URL = os.getenv('DATABASE_URL')
+    if DATABASE_URL:
+        # Parse DATABASE_URL format: postgres://user:password@host:port/database
+        import urllib.parse as urlparse
+        url = urlparse.urlparse(DATABASE_URL)
+        DB_HOST = url.hostname
+        DB_PORT = str(url.port) if url.port else '5432'
+        DB_USER = url.username
+        DB_PASSWORD = url.password
+        DB_NAME = url.path.lstrip('/')
+    else:
+        # Fall back to individual environment variables
+        DB_HOST = os.getenv('DB_HOST', 'localhost')
+        DB_PORT = os.getenv('DB_PORT', '5432')
+        DB_USER = os.getenv('DB_USER', 'postgres')
+        DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+        DB_NAME = os.getenv('DB_NAME', 'course_planner')
     
     # Session configuration
     SESSION_PERMANENT = False
