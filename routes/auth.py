@@ -17,16 +17,16 @@ def register():
 
         # Basic validation
         if not username or not password:
-            flash("Username and password are required.", "error")
+            flash("Please check your input. Username and password are required.", "error")
             return render_template("register.html", username=username)
         if password != confirm_password:
-            flash("Passwords do not match.", "error")
+            flash("Please check your input. Passwords do not match.", "error")
             return render_template("register.html", username=username)
 
         # Check if username exists
         existing = execute_query_single("SELECT user_id FROM Users WHERE username = %s LIMIT 1", (username,))
         if existing:
-            flash("Username already exists.", "error")
+            flash("Registration failed. Please check your input and try again.", "error")
             return render_template("register.html", username=username)
 
         # Hash password and insert user
@@ -37,7 +37,7 @@ def register():
         )
         user_id = row["user_id"] if row else None
         if not user_id:
-            flash("Registration failed. Please try again.", "error")
+            flash("Registration failed. Please check your input and try again.", "error")
             return render_template("register.html", username=username)
 
         # Log user in
@@ -49,7 +49,7 @@ def register():
     except Exception as e:
         # Log the full exception (e) for server-side debugging
         print(f"Server Error during registration: {e}") 
-        flash("An unexpected server error occurred. Please try again later.", "error")
+        flash("Registration failed. Please check your input and try again.", "error")
         return render_template("register.html", username=username)
 
 
@@ -63,7 +63,7 @@ def login():
         password = request.form.get("password") or ""
 
         if not username or not password:
-            flash("Username and password are required.", "error")
+            flash("Please check your input. Username and password are required.", "error")
             return render_template("login.html", username=username)
 
         # Fetch stored password hash
@@ -72,7 +72,7 @@ def login():
             (username,),
         )
         if not user or not check_password_hash(user["password_hash"], password):
-            flash("Invalid username or password.", "error")
+            flash("Login failed. Please check your username and password and try again.", "error")
             return render_template("login.html", username=username)
 
         # Set session
@@ -83,9 +83,9 @@ def login():
         return redirect(next_url or url_for("home.get_selected_course"))
     except Exception as e:
         # Log the full exception (e) for server-side debugging
-        print(f"Server Error during registration: {e}") 
-        flash("An unexpected server error occurred. Please try again later.", "error")
-        return render_template("register.html", username=username)
+        print(f"Server Error during login: {e}") 
+        flash("Login failed. Please check your input and try again.", "error")
+        return render_template("login.html", username=username)
 
 
 @auth_bp.route("/logout", methods=["POST", "GET"])
