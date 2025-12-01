@@ -1,4 +1,4 @@
-from flask import render_template, Blueprint, request, session
+from flask import render_template, Blueprint, request, session, flash
 from database import call_function, call_procedure, execute_query
 from collections import OrderedDict
 from urllib.parse import urlencode
@@ -37,38 +37,44 @@ course_bp = Blueprint("course", __name__, url_prefix="/course")
 @course_bp.route("/")
 @login_required
 def get_search_course():
-    course_id = request.args.get("input_course_id", "")
-    course_title = request.args.get("input_course_title", "")
-    instructor_name = request.args.get("input_instructor_name", "")
-    courses = execute_query(
-        COURSE_SEARCH_QUERY,
-        {
-            "course_id": course_id,
-            "course_title": course_title,
-            "instructor_name": instructor_name,
-        },
-        fetch=True,
-    )
-    courses_for_template = group_courses(courses)
-    
-    # Get user's existing selections
-    user_id = session["user_id"]
-    user_selections = execute_query(
-        "SELECT course_id, instructor_id FROM User_Selection WHERE user_id = %s",
-        (user_id,),
-        fetch=True
-    )
-    
-    # Create a set of (course_id, instructor_id) tuples for quick lookup
-    selected_set = {(row['course_id'], row['instructor_id']) for row in user_selections}
-    
-    # Mark which courses/instructors are already selected
-    for course in courses_for_template:
-        for instructor in course['instructors']:
-            key = (course['course_id'], instructor['instructor_id'])
-            instructor['is_selected'] = key in selected_set
-    
-    return render_template("course.html", courses=courses_for_template)
+    try:
+        course_id = request.args.get("input_course_id", "")
+        course_title = request.args.get("input_course_title", "")
+        instructor_name = request.args.get("input_instructor_name", "")
+        courses = execute_query(
+            COURSE_SEARCH_QUERY,
+            {
+                "course_id": course_id,
+                "course_title": course_title,
+                "instructor_name": instructor_name,
+            },
+            fetch=True,
+        )
+        courses_for_template = group_courses(courses)
+        
+        # Get user's existing selections
+        user_id = session["user_id"]
+        user_selections = execute_query(
+            "SELECT course_id, instructor_id FROM User_Selection WHERE user_id = %s",
+            (user_id,),
+            fetch=True
+        )
+        
+        # Create a set of (course_id, instructor_id) tuples for quick lookup
+        selected_set = {(row['course_id'], row['instructor_id']) for row in user_selections}
+        
+        # Mark which courses/instructors are already selected
+        for course in courses_for_template:
+            for instructor in course['instructors']:
+                key = (course['course_id'], instructor['instructor_id'])
+                instructor['is_selected'] = key in selected_set
+        
+        return render_template("course.html", courses=courses_for_template)
+    except Exception as e:
+        # Log the full exception (e) for server-side debugging
+        print(f"Server Error during course search: {e}") 
+        flash("An unexpected server error occurred. Please try again later.", "error")
+        return render_template("course.html", courses=[])
 
 
 def group_courses(courses):
@@ -146,10 +152,16 @@ def group_courses(courses):
 @course_bp.route("/add", methods=["POST"])
 @login_required
 def add_course():
-    user_id = session["user_id"]
-    data = request.get_json()
-    course_id = data["course_id"]
-    instructor_id = data["instructor_id"]
-    call_procedure("AddUserSelection", (user_id, course_id, instructor_id), False)
-    return {"status": "ok"}
+    try:
+        user_id = session["user_id"]
+        data = request.get_json()
+        course_id = data["course_id"]
+        instructor_id = data["instructor_id"]
+        call_procedure("AddUserSelection", (user_id, course_id, instructor_id), False)
+        return {"status": "ok"}
+    except Exception as e:
+        # Log the error and return a generic error message
+        print(f"Error adding course selection: {e}")
+        flash("We could not remove the course selection due to a server error. Please try again.", "error")
+        return render_template("course.html", courses=[])
 

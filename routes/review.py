@@ -219,8 +219,11 @@ def get_reviews(course_id: str, instructor_id: int):
                              user_has_review=user_has_review)
     
     except Exception as e:
+        #log error 
+        print(f"Error loading reviews for {course_id}/{instructor_id}: {e}") 
         return render_template('review.html',
-                             error=f"Error loading reviews: {str(e)}",
+                             # Provide a generic, uninformative error message to the user
+                             error="We could not load the reviews due to a server issue.", 
                              course_id=course_id,
                              instructor_id=instructor_id)
 
@@ -273,6 +276,7 @@ def create_review(course_id: str, instructor_id: int):
         flash('You have already submitted a review for this course-instructor pair.', 'error')
         return redirect(url_for('review.get_reviews', course_id=course_id, instructor_id=instructor_id))
     except Exception as e:
-        flash(f'Error submitting review: {str(e)}', 'error')
+        print(f"Server Error during review submission: {e}")
+        flash('An unexpected error occurred while submitting your review. Please try again.', 'error')
         return redirect(url_for('review.get_reviews', course_id=course_id, instructor_id=instructor_id))
 
